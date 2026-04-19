@@ -1,0 +1,17 @@
+{
+  "name": "damage-inspector-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Damage Inspector Agent PWA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
