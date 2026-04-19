@@ -5,31 +5,28 @@ const Anthropic = require("@anthropic-ai/sdk");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json({ limit: "20mb" }));
-
-// Serve frontend static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Anthropic client — key comes exclusively from environment
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `You are a professional construction and water damage inspector. \
 Analyze the provided image. Identify the type of damage, the likely cause, and a brief repair suggestion. \
 You MUST provide the report in two distinct sections: first in English, then in Hebrew.`;
 
-// POST /analyze
+// POST /analyze — streams response via Server-Sent Events
 app.post("/analyze", async (req, res) => {
   const { image } = req.body;
+  if (!image) return res.status(400).json({ error: "No image provided." });
 
-  if (!image) {
-    return res.status(400).json({ error: "No image provided." });
-  }
+  // SSE headers — text starts flowing to the client immediately
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
 
   try {
-    const response = await anthropic.messages.create({
+    const stream = anthropic.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
@@ -39,30 +36,30 @@ app.post("/analyze", async (req, res) => {
           content: [
             {
               type: "image",
-              source: {
-                type: "base64",
-                media_type: "image/jpeg",
-                data: image,
-              },
+              source: { type: "base64", media_type: "image/jpeg", data: image },
             },
-            {
-              type: "text",
-              text: "Please inspect this image and provide your damage report.",
-            },
+            { type: "text", text: "Please inspect this image and provide your damage report." },
           ],
         },
       ],
     });
 
-    const report = response.content[0].text;
-    res.json({ report });
+    // Forward each text chunk to the client as it arrives
+    stream.on("text", (text) => {
+      res.write(`data: ${JSON.stringify({ text })}\n\n`);
+    });
+
+    await stream.finalMessage();
+    res.write("data: [DONE]\n\n");
+    res.end();
+
   } catch (err) {
     console.error("Anthropic API error:", err.message);
-    res.status(500).json({ error: "Failed to analyze image." });
+    res.write(`data: ${JSON.stringify({ error: "Failed to analyze image." })}\n\n`);
+    res.end();
   }
 });
 
-// Catch-all: serve index.html for any unmatched route
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
