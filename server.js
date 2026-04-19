@@ -1,13 +1,15 @@
 const express = require("express");
-const cors = require("cors");
+const path = require("path");
 const Anthropic = require("@anthropic-ai/sdk");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
 app.use(express.json({ limit: "20mb" }));
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, "public")));
 
 // Anthropic client — key comes exclusively from environment
 const anthropic = new Anthropic({
@@ -20,7 +22,7 @@ You MUST provide the report in two distinct sections: first in English, then in 
 
 // POST /analyze
 app.post("/analyze", async (req, res) => {
-  const { image } = req.body; // expects a Base64 string (no data-URI prefix)
+  const { image } = req.body;
 
   if (!image) {
     return res.status(400).json({ error: "No image provided." });
@@ -60,7 +62,9 @@ app.post("/analyze", async (req, res) => {
   }
 });
 
-// Health-check
-app.get("/", (req, res) => res.send("Damage Inspector API is running."));
+// Catch-all: serve index.html for any unmatched route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

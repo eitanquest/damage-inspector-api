@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0073ea" />
+  <title>סוכן בדיקת נזקים</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #0073ea;
+      --blue-dark:  #0060c0;
+      --blue-light: #e8f3fd;
+      --navy:       #323338;
+      --gray-bg:    #f5f6f8;
+      --gray-mid:   #c3c6d4;
+      --gray-text:  #676879;
+      --white:      #ffffff;
+      --green:      #00c875;
+      --orange:     #fdab3d;
+      --red:        #e2445c;
+      --radius:     8px;
+      --shadow:     0 4px 16px rgba(0,0,0,0.10);
+      --shadow-sm:  0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-bg);
+      color: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP NAV ── */
+    .topbar {
+      background: var(--navy);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.3px;
+    }
+    .topbar-brand .dot {
+      width: 28px; height: 28px;
+      background: var(--blue);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .topbar-badge {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      flex: 1;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .page-sub {
+      color: var(--gray-text);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid #e6e9ef;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid #e6e9ef;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-header .step {
+      width: 22px; height: 22px;
+      background: var(--blue-light);
+      color: var(--blue);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .card-body { padding: 20px; }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--gray-mid);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--blue);
+      background: var(--blue-light);
+    }
+    .upload-zone input { display: none; }
+    .upload-icon {
+      width: 52px; height: 52px;
+      background: var(--blue-light);
+      border-radius: 12px;
+      margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .upload-zone h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .upload-zone p {
+      font-size: 13px;
+      color: var(--gray-text);
+    }
+    .upload-zone .or {
+      margin: 12px 0;
+      font-size: 12px;
+      color: var(--gray-mid);
+      font-weight: 500;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,115,234,0.35); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: var(--white);
+      color: var(--navy);
+      border: 1px solid var(--gray-mid);
+    }
+    .btn-secondary:hover { background: var(--gray-bg); }
+    .btn-outline-blue {
+      background: var(--blue-light);
+      color: var(--blue);
+      border: 1px solid #b3d4f5;
+    }
+    .btn-outline-blue:hover { background: #d0e8fc; }
+    .btn-full { width: 100%; }
+    .btn-lg { padding: 14px 24px; font-size: 15px; }
+
+    /* ── PREVIEW ── */
+    .preview-wrap {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      border: 1px solid #e6e9ef;
+    }
+    .preview-wrap img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(50,51,56,0.75);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── LOADING ── */
+    .loading-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      gap: 16px;
+    }
+    .pulse-ring {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--blue-light);
+      border-top-color: var(--blue);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-card h3 { font-size: 16px; font-weight: 600; color: var(--navy); }
+    .loading-card p { font-size: 13px; color: var(--gray-text); }
+
+    /* ── REPORT ── */
+    .report-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 4px;
+      background: var(--gray-bg);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-text);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: var(--white);
+      color: var(--navy);
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .report-text {
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--navy);
+    }
+    .report-text[dir="rtl"] {
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    /* ── STATUS CHIPS ── */
+    .status-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chip-blue  { background: var(--blue-light);         color: var(--blue); }
+    .chip-green { background: #e7f8ef;                   color: #007038; }
+    .chip-org   { background: #fff3de;                   color: #b06000; }
+    .chip-red   { background: #fce8ec;                   color: #b3001b; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: #e6e9ef;
+      margin: 16px 0;
+    }
+
+    /* ── ERROR ── */
+    .error-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px;
+      background: #fce8ec;
+      border: 1px solid #f5c0c9;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .error-icon { font-size: 20px; margin-top: 1px; }
+    .error-card h4 { font-size: 14px; font-weight: 600; color: #b3001b; margin-bottom: 2px; }
+    .error-card p  { font-size: 13px; color: #c0394f; }
+
+    /* ── HIDDEN ── */
+    .hidden { display: none !important; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 480px) {
+      .main { padding: 20px 12px 40px; }
+      .page-title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAV -->
+  <nav class="topbar">
+    <div class="topbar-brand">
+      <div class="dot">🔍</div>
+      סוכן בדיקת נזקים
+    </div>
+    <div class="topbar-badge">AI Inspector</div>
+  </nav>
+
+  <main class="main">
+    <h1 class="page-title">בדיקת נזקי בנייה</h1>
+    <p class="page-sub">צלם נזק — קבל דוח מקצועי מיידי באנגלית ועברית</p>
+
+    <!-- STEP 1: UPLOAD -->
+    <div class="card" id="uploadCard">
+      <div class="card-header">
+        <div class="step">1</div>
+        העלאת תמונה
+      </div>
+      <div class="card-body">
+
+        <!-- Image preview (hidden until photo chosen) -->
+        <div class="preview-wrap hidden" id="previewWrap">
+          <img id="preview" src="" alt="תמונת נזק" />
+          <span class="preview-overlay">📎 תמונה נבחרה</span>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('cameraInput').click()">
+          <input type="file" id="cameraInput" accept="image/*" capture="environment" />
+          <div class="upload-icon">📸</div>
+          <h3>צלם או העלה תמונה של הנזק</h3>
+          <p>לחץ לפתיחת המצלמה או לבחירת קובץ</p>
+          <div class="or">— או —</div>
+          <button class="btn btn-outline-blue" type="button" onclick="event.stopPropagation(); document.getElementById('cameraInput').click()">
+            בחר מהגלריה
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STEP 2: ANALYZE (hidden until image chosen) -->
+    <div class="card hidden" id="analyzeCard">
+      <div class="card-header">
+        <div class="step">2</div>
+        ניתוח הנזק
+      </div>
+      <div class="card-body">
+        <p style="font-size:14px; color:var(--gray-text); margin-bottom:16px;">
+          הסוכן ינתח את התמונה וייצר דוח מפורט הכולל סוג הנזק, סיבה אפשרית והמלצות תיקון.
+        </p>
+        <button class="btn btn-primary btn-full btn-lg" id="analyzeBtn">
+          <span>🔬</span> נתח את הנזק
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="card hidden" id="loadingCard">
+      <div class="loading-card">
+        <div class="pulse-ring"></div>
+        <h3>הסוכן מנתח את התמונה...</h3>
+        <p>נא להמתין, זה ייקח מספר שניות</p>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="error-card hidden" id="errorCard">
+      <div class="error-icon">⚠️</div>
+      <div>
+        <h4>שגיאה בחיבור לשרת</h4>
+        <p id="errorDetail"></p>
+      </div>
+    </div>
+
+    <!-- STEP 3: REPORT -->
+    <div class="card hidden" id="reportCard">
+      <div class="card-header">
+        <div class="step">3</div>
+        דוח הבדיקה
+      </div>
+      <div class="card-body">
+
+        <div class="status-row" id="statusRow">
+          <span class="chip chip-blue">🏗️ בדיקה הושלמה</span>
+          <span class="chip chip-org" id="severityChip"></span>
+        </div>
+
+        <div class="report-tabs">
+          <button class="tab-btn active" onclick="switchTab('en')">🇬🇧 English Report</button>
+          <button class="tab-btn" onclick="switchTab('he')">🇮🇱 דוח בעברית</button>
+        </div>
+
+        <div class="tab-content active" id="tab-en">
+          <p class="report-text" id="report-en" dir="ltr"></p>
+        </div>
+        <div class="tab-content" id="tab-he">
+          <p class="report-text" id="report-he" dir="rtl"></p>
+        </div>
+
+        <div class="divider"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="resetAll()">🔄 בדיקה חדשה</button>
+          <button class="btn btn-outline-blue" onclick="copyReport()">📋 העתק דוח</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // All requests go to the same origin — no hardcoded URL needed
+    const BACKEND_URL = "/analyze";
+
+    let base64Image = null;
+    let fullReport = "";
+
+    const cameraInput   = document.getElementById("cameraInput");
+    const uploadZone    = document.getElementById("uploadZone");
+    const previewWrap   = document.getElementById("previewWrap");
+    const preview       = document.getElementById("preview");
+    const analyzeCard   = document.getElementById("analyzeCard");
+    const analyzeBtn    = document.getElementById("analyzeBtn");
+    const loadingCard   = document.getElementById("loadingCard");
+    const errorCard     = document.getElementById("errorCard");
+    const errorDetail   = document.getElementById("errorDetail");
+    const reportCard    = document.getElementById("reportCard");
+    const severityChip  = document.getElementById("severityChip");
+
+    // ── Photo selected ──────────────────────────────────────────────────────
+    cameraInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataURL = ev.target.result;
+        base64Image = dataURL.split(",")[1];
+
+        preview.src = dataURL;
+        previewWrap.classList.remove("hidden");
+        uploadZone.style.display = "none";
+        analyzeCard.classList.remove("hidden");
+
+        reportCard.classList.add("hidden");
+        errorCard.classList.add("hidden");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ── Analyze ─────────────────────────────────────────────────────────────
+    analyzeBtn.addEventListener("click", async () => {
+      if (!base64Image) return;
+
+      loadingCard.classList.remove("hidden");
+      analyzeCard.classList.add("hidden");
+      reportCard.classList.add("hidden");
+      errorCard.classList.add("hidden");
+
+      try {
+        const response = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64Image }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        fullReport = data.report;
+        renderReport(data.report);
+        reportCard.classList.remove("hidden");
+
+      } catch (err) {
+        errorDetail.textContent = err.message || "";
+        errorCard.classList.remove("hidden");
+        analyzeCard.classList.remove("hidden");
+      } finally {
+        loadingCard.classList.add("hidden");
+      }
+    });
+
+    // ── Render report into tabs ─────────────────────────────────────────────
+    function renderReport(text) {
+      // Split on the Hebrew section marker — common patterns
+      const splitPatterns = [
+        /\n#{1,3}\s*🔍\s*חלק\s*2/i,
+        /\n---\s*\n#{1,3}\s*🔍\s*חלק/i,
+        /\n#{1,3}\s*חלק\s*2/i,
+        /\n---\s*\n\*\*סוג הנזק\*\*/i,
+        /\n\*\*סוג הנזק\*\*/,
+        /\n## 🔍 חלק/,
+      ];
+
+      let enText = text;
+      let heText = "";
+
+      for (const pattern of splitPatterns) {
+        const match = text.search(pattern);
+        if (match !== -1) {
+          enText = text.slice(0, match).trim();
+          heText = text.slice(match).trim();
+          break;
+        }
+      }
+
+      // Fallback: split roughly in half on a paragraph boundary
+      if (!heText) {
+        const lines = text.split("\n");
+        const mid = Math.floor(lines.length / 2);
+        enText = lines.slice(0, mid).join("\n").trim();
+        heText = lines.slice(mid).join("\n").trim();
+      }
+
+      document.getElementById("report-en").textContent = enText;
+      document.getElementById("report-he").textContent = heText;
+
+      // Detect severity from text and set chip
+      const lower = text.toLowerCase();
+      if (lower.includes("severe") || lower.includes("critical") || lower.includes("חמור")) {
+        severityChip.textContent = "🔴 חומרה גבוהה";
+        severityChip.className = "chip chip-red";
+      } else if (lower.includes("moderate") || lower.includes("בינוני")) {
+        severityChip.textContent = "🟠 חומרה בינונית";
+        severityChip.className = "chip chip-org";
+      } else {
+        severityChip.textContent = "🟢 חומרה נמוכה";
+        severityChip.className = "chip chip-green";
+      }
+    }
+
+    // ── Tab switching ───────────────────────────────────────────────────────
+    function switchTab(lang) {
+      document.querySelectorAll(".tab-btn").forEach((b, i) => {
+        b.classList.toggle("active", (i === 0 && lang === "en") || (i === 1 && lang === "he"));
+      });
+      document.getElementById("tab-en").classList.toggle("active", lang === "en");
+      document.getElementById("tab-he").classList.toggle("active", lang === "he");
+    }
+
+    // ── Copy report ─────────────────────────────────────────────────────────
+    function copyReport() {
+      navigator.clipboard.writeText(fullReport).then(() => {
+        const btn = document.querySelector('[onclick="copyReport()"]');
+        const orig = btn.textContent;
+        btn.textContent = "✅ הועתק!";
+        setTimeout(() => btn.textContent = orig, 2000);
+      });
+    }
+
+    // ── Reset ───────────────────────────────────────────────────────────────
+    function resetAll() {
+      base64Image = null;
+      fullReport = "";
+      cameraInput.value = "";
+      preview.src = "";
+      previewWrap.classList.add("hidden");
+      uploadZone.style.display = "";
+      analyzeCard.classList.add("hidden");
+      reportCard.classList.add("hidden");
+      errorCard.classList.add("hidden");
+      loadingCard.classList.add("hidden");
+    }
+  </script>
+
+</body>
+</html>
